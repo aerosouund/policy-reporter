@@ -8,9 +8,8 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/kyverno/policy-reporter/pkg/crd/api/policyreport/v1alpha2"
+	"github.com/kyverno/policy-reporter/pkg/payload"
 	"github.com/kyverno/policy-reporter/pkg/target"
-	"github.com/kyverno/policy-reporter/pkg/target/http"
 	"github.com/kyverno/policy-reporter/pkg/target/provider/aws"
 )
 
@@ -27,24 +26,11 @@ type client struct {
 	kinesis      aws.Client
 }
 
-func (c *client) Send(result v1alpha2.PolicyReportResult) {
-	if len(c.customFields) > 0 {
-		props := make(map[string]string, 0)
-
-		for property, value := range c.customFields {
-			props[property] = value
-		}
-
-		for property, value := range result.Properties {
-			props[property] = value
-		}
-
-		result.Properties = props
-	}
+func (c *client) Send(result payload.Payload) {
 
 	body := new(bytes.Buffer)
 
-	if err := json.NewEncoder(body).Encode(http.NewJSONResult(result)); err != nil {
+	if err := json.NewEncoder(body).Encode(result.Body()); err != nil {
 		zap.L().Error("failed to encode result", zap.String("name", c.Name()), zap.Error(err))
 		return
 	}

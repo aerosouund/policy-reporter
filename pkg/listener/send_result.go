@@ -9,6 +9,7 @@ import (
 	"github.com/kyverno/policy-reporter/pkg/helper"
 	"github.com/kyverno/policy-reporter/pkg/report"
 	"github.com/kyverno/policy-reporter/pkg/target"
+	"github.com/kyverno/policy-reporter/pkg/target/payload"
 )
 
 const SendResults = "send_results_listener"
@@ -20,7 +21,7 @@ func NewSendResultListener(targets *target.Collection) report.PolicyReportResult
 		wg.Add(len(clients))
 
 		for _, t := range clients {
-			go func(target target.Client, re v1alpha2.ReportInterface, result v1alpha2.PolicyReportResult) {
+			go func(target target.Client, re payload.Payload, result v1alpha2.PolicyReportResult) {
 				defer wg.Done()
 				if !result.HasResource() && re.GetScope() != nil {
 					result.Resources = []corev1.ObjectReference{*re.GetScope()}

@@ -1,7 +1,7 @@
 package webhook
 
 import (
-	"github.com/kyverno/policy-reporter/pkg/crd/api/policyreport/v1alpha2"
+	"github.com/kyverno/policy-reporter/pkg/payload"
 	"github.com/kyverno/policy-reporter/pkg/target"
 	"github.com/kyverno/policy-reporter/pkg/target/http"
 )
@@ -23,22 +23,15 @@ type client struct {
 	client       http.Client
 }
 
-func (e *client) Send(result v1alpha2.PolicyReportResult) {
+func (e *client) Send(result payload.Payload) {
+	resultBody := result.Body()
 	if len(e.customFields) > 0 {
-		props := make(map[string]string, 0)
-
 		for property, value := range e.customFields {
-			props[property] = value
+			resultBody[property] = value
 		}
-
-		for property, value := range result.Properties {
-			props[property] = value
-		}
-
-		result.Properties = props
 	}
 
-	req, err := http.CreateJSONRequest("POST", e.host, http.NewJSONResult(result))
+	req, err := http.CreateJSONRequest("POST", e.host, resultBody)
 	if err != nil {
 		return
 	}

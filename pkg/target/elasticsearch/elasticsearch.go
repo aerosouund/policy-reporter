@@ -3,7 +3,7 @@ package elasticsearch
 import (
 	"time"
 
-	"github.com/kyverno/policy-reporter/pkg/crd/api/policyreport/v1alpha2"
+	"github.com/kyverno/policy-reporter/pkg/payload"
 	"github.com/kyverno/policy-reporter/pkg/target"
 	"github.com/kyverno/policy-reporter/pkg/target/http"
 )
@@ -50,7 +50,7 @@ type client struct {
 	typelessApi bool
 }
 
-func (e *client) Send(result v1alpha2.PolicyReportResult) {
+func (e *client) Send(result payload.Payload) {
 	var host string
 	var apiSuffix string
 	if e.typelessApi {
@@ -70,21 +70,14 @@ func (e *client) Send(result v1alpha2.PolicyReportResult) {
 		host = e.host + "/" + e.index + "-" + time.Now().Format("2006.01.02") + "/" + apiSuffix
 	}
 
+	resultBody := result.Body()
 	if len(e.customFields) > 0 {
-		props := make(map[string]string, 0)
-
 		for property, value := range e.customFields {
-			props[property] = value
+			resultBody[property] = value
 		}
-
-		for property, value := range result.Properties {
-			props[property] = value
-		}
-
-		result.Properties = props
 	}
 
-	req, err := http.CreateJSONRequest("POST", host, http.NewJSONResult(result))
+	req, err := http.CreateJSONRequest("POST", host, resultBody)
 	if err != nil {
 		return
 	}

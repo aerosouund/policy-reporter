@@ -11,6 +11,7 @@ import (
 	"github.com/kyverno/policy-reporter/pkg/cache"
 	"github.com/kyverno/policy-reporter/pkg/crd/api/policyreport/v1alpha2"
 	"github.com/kyverno/policy-reporter/pkg/kubernetes/namespaces"
+	"github.com/kyverno/policy-reporter/pkg/payload"
 	"github.com/kyverno/policy-reporter/pkg/report"
 	"github.com/kyverno/policy-reporter/pkg/validate"
 )
@@ -26,7 +27,7 @@ const (
 // Client for a provided Target
 type Client interface {
 	// Send the given Result to the configured Target
-	Send(result v1alpha2.PolicyReportResult)
+	Send(result payload.Payload)
 	// BatchSend the given Results of a single PolicyReport to the configured Target
 	BatchSend(report v1alpha2.ReportInterface, results []v1alpha2.PolicyReportResult)
 	// SkipExistingOnStartup skips already existing PolicyReportResults on startup
