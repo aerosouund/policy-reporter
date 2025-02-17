@@ -1,13 +1,14 @@
 package payload
 
 import (
+	"bytes"
 	"fmt"
+	"html/template"
 	"strings"
 	"time"
 
-	"github.com/atc0005/go-teams-notify/v2/adaptivecard"
 	"github.com/kyverno/policy-reporter/pkg/crd/api/policyreport/v1alpha2"
-	"github.com/kyverno/policy-reporter/pkg/target/formatting"
+	corev1 "k8s.io/api/core/v1"
 )
 
 var (
@@ -16,14 +17,15 @@ var (
 )
 
 type Payload interface {
-	CreationTimestamp() time.Time
+	// CreationTimestamp() time.Time
 	Body() map[string]interface{}
 	ToLoki(map[string]string) Stream
-	ToTelegram()
-	ToTeams()
+	ToTelegram() (string, error)
+	// ToTeams()
 	ToSlack()
-	ToDiscord()
+	// ToDiscord()
 	BlobStorageKey(string) string
+	KinesisKey() string
 }
 
 type PolicyReportResultPayload struct {
@@ -37,6 +39,11 @@ func (p *PolicyReportResultPayload) BlobStorageKey(prefix string) string {
 
 // should be the equivalent of get json body
 func (p *PolicyReportResultPayload) Body() {}
+
+func (s *PolicyReportResultPayload) KinesisKey() string {
+	t := time.Unix(s.Result.Timestamp.Seconds, int64(s.Result.Timestamp.Nanos))
+	return fmt.Sprintf("%s-%s-%s", s.Result.Policy, s.Result.ID, t.Format(time.RFC3339Nano))
+}
 
 func (s *PolicyReportResultPayload) ToLoki(customFields map[string]string) Stream {
 	timestamp := time.Now()
@@ -91,60 +98,43 @@ func (s *PolicyReportResultPayload) ToLoki(customFields map[string]string) Strea
 	}
 }
 
-func (s *client) newMessage(resource *corev1.ObjectReference, results []v1alpha2.PolicyReportResult) *adaptivecard.Message {
-	header := adaptivecard.NewContainer()
+func (s *PolicyReportResultPayload) ToTelegram(chatID string) (string, error) {
+	// if len(e.customFields) > 0 {
+	// 	props := make(map[string]string, 0)
 
-	if resource != nil {
-		header.AddElement(false, adaptivecard.NewTitleTextBlock(formatting.ResourceString(resource), true))
-	} else {
-		header.AddElement(false, adaptivecard.NewTitleTextBlock("New PolicyReport Results", true))
+	// 	for property, value := range e.customFields {
+	// 		props[property] = value
+	// 	}
+
+	// 	for property, value := range result.Properties {
+	// 		props[property] = value
+	// 	}
+
+	// 	result.Properties = props
+	// }
+
+	var textBuffer bytes.Buffer
+
+	ttmpl, err := template.New("telegram").Funcs(template.FuncMap{"escape": escape}).Parse(notificationTempl)
+	if err != nil {
+		return "", err
 	}
 
-	header.AddElement(false, adaptivecard.NewTextBlock(fmt.Sprintf("Received %d new Policy Report Results", len(results)), true))
-
-	if len(s.customFields) > 0 {
-		header.AddElement(false, MapToColumnSet(s.customFields))
+	var res *corev1.ObjectReference
+	if s.Result.HasResource() {
+		res = s.Result.GetResource()
 	}
 
-	card := adaptivecard.NewCard()
-	card.SetFullWidth()
-	card.AddContainer(true, header)
-
-	for _, result := range results {
-		stats := newFactSet()
-		stats.Facts = append(stats.Facts, adaptivecard.Fact{Title: "Status", Value: string(result.Result)})
-
-		if result.Severity != "" {
-			stats.Facts = append(stats.Facts, adaptivecard.Fact{Title: "Severity", Value: string(result.Severity)})
-		}
-
-		policy := fmt.Sprintf("Policy: %s", result.Policy)
-
-		if result.Rule != "" {
-			policy = fmt.Sprintf("%s/%s", policy, result.Rule)
-		}
-
-		r := adaptivecard.NewContainer()
-		r.Separator = true
-		r.Spacing = adaptivecard.SpacingLarge
-		r.AddElement(false, newSubTitle(policy))
-		r.AddElement(false, adaptivecard.NewTextBlock(result.Category, true))
-		r.AddElement(false, stats)
-		r.AddElement(false, adaptivecard.NewTextBlock(result.Message, true))
-
-		if len(result.Properties) > 0 {
-			r.AddElement(false, MapToColumnSet(result.Properties))
-		}
-
-		card.AddContainer(false, r)
+	err = ttmpl.Execute(&textBuffer, values{
+		Result:   s.Result,
+		Time:     time.Now(),
+		Resource: res,
+	})
+	if err != nil {
+		return "", err
 	}
 
-	msg := adaptivecard.NewMessage()
-	msg.Attach(card)
-
-	return msg
+	return textBuffer.String(), nil
 }
-
-func (s *PolicyReportResultPayload) ToTelegram()
 
 func (s *PolicyReportResultPayload) ToSlack()

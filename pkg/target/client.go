@@ -29,7 +29,7 @@ type Client interface {
 	// Send the given Result to the configured Target
 	Send(result payload.Payload)
 	// BatchSend the given Results of a single PolicyReport to the configured Target
-	BatchSend(report v1alpha2.ReportInterface, results []v1alpha2.PolicyReportResult)
+	BatchSend(report v1alpha2.ReportInterface, results []payload.Payload)
 	// SkipExistingOnStartup skips already existing PolicyReportResults on startup
 	SkipExistingOnStartup() bool
 	// Name is a unique identifier for each Target
@@ -267,7 +267,7 @@ func (c *BaseClient) Reset(_ context.Context) error {
 
 func (c *BaseClient) CleanUp(_ context.Context, _ v1alpha2.ReportInterface) {}
 
-func (c *BaseClient) BatchSend(_ v1alpha2.ReportInterface, _ []v1alpha2.PolicyReportResult) {}
+func (c *BaseClient) BatchSend(_ v1alpha2.ReportInterface, _ []payload.Payload) {}
 
 func NewBaseClient(options ClientOptions) BaseClient {
 	return BaseClient{options.Name, options.SkipExistingOnStartup, options.ResultFilter, options.ReportFilter, time.Now(), cache.NewInMermoryCache(6*time.Hour, 10*time.Minute)}

@@ -8,6 +8,7 @@ import (
 
 	"github.com/kyverno/policy-reporter/pkg/crd/api/policyreport/v1alpha2"
 	"github.com/kyverno/policy-reporter/pkg/helper"
+	"github.com/kyverno/policy-reporter/pkg/payload"
 	"github.com/kyverno/policy-reporter/pkg/target"
 	"github.com/kyverno/policy-reporter/pkg/target/formatting"
 	"github.com/kyverno/policy-reporter/pkg/target/http"
@@ -280,7 +281,7 @@ func (s *client) Send(result v1alpha2.PolicyReportResult) {
 	s.PostMessage(s.message(result))
 }
 
-func (s *client) BatchSend(report v1alpha2.ReportInterface, results []v1alpha2.PolicyReportResult) {
+func (s *client) BatchSend(report v1alpha2.ReportInterface, results []payload.Payload) {
 	if report.GetScope() == nil {
 		for _, result := range results {
 			s.Send(result)

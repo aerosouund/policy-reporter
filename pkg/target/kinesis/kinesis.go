@@ -3,8 +3,6 @@ package kinesis
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
-	"time"
 
 	"go.uber.org/zap"
 
@@ -27,17 +25,13 @@ type client struct {
 }
 
 func (c *client) Send(result payload.Payload) {
-
 	body := new(bytes.Buffer)
-
 	if err := json.NewEncoder(body).Encode(result.Body()); err != nil {
 		zap.L().Error("failed to encode result", zap.String("name", c.Name()), zap.Error(err))
 		return
 	}
-	t := time.Unix(result.Timestamp.Seconds, int64(result.Timestamp.Nanos))
-	key := fmt.Sprintf("%s-%s-%s", result.Policy, result.ID, t.Format(time.RFC3339Nano))
 
-	if err := c.kinesis.Upload(body, key); err != nil {
+	if err := c.kinesis.Upload(body, result.KinesisKey()); err != nil {
 		zap.L().Error("kinesis upload error", zap.String("name", c.Name()), zap.Error(err))
 		return
 	}
