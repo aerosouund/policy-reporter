@@ -6,71 +6,11 @@ import (
 	"time"
 
 	"go.uber.org/zap"
-	corev1 "k8s.io/api/core/v1"
 
 	"github.com/kyverno/policy-reporter/pkg/crd/api/policyreport/v1alpha2"
 	"github.com/kyverno/policy-reporter/pkg/target"
 	"github.com/kyverno/policy-reporter/pkg/target/http"
 )
-
-const (
-	messageTempl  string = `[{{ .Result.Severity }}] {{ or .Result.Policy .Result.Rule }}`
-	resourceTempl string = `{{ if .Namespace }}[{{ .Namespace }}] {{ end }} {{ .APIVersion }}/{{ .Kind }} {{ .Name }}`
-)
-
-type values struct {
-	Result   v1alpha2.PolicyReportResult
-	Priority string
-	Resource *corev1.ObjectReference
-}
-
-type header struct {
-	Title    string `json:"title"`
-	SubTitle string `json:"subtitle"`
-}
-
-type decoratedText struct {
-	TopLabel string `json:"topLabel"`
-	Text     string `json:"text"`
-}
-
-type column struct {
-	Widgets []widget `json:"widgets"`
-}
-
-type columns struct {
-	ColumnItems []column `json:"columnItems"`
-}
-
-type textParagraph struct {
-	Text string `json:"text"`
-}
-
-type widget struct {
-	DecoratedText *decoratedText `json:"decoratedText,omitempty"`
-	TextParagraph *textParagraph `json:"textParagraph,omitempty"`
-	Columns       *columns       `json:"columns,omitempty"`
-}
-
-type section struct {
-	Header      string   `json:"header,omitempty"`
-	Collapsible bool     `json:"collapsible,omitempty"`
-	Widgets     []widget `json:"widgets,omitempty"`
-}
-
-type card struct {
-	Header   *header   `json:"header,omitempty"`
-	Sections []section `json:"sections,omitempty"`
-}
-
-type cardsV2 struct {
-	CardID string `json:"cardId,omitempty"`
-	Card   card   `json:"card,omitempty"`
-}
-
-type Payload struct {
-	CardsV2 []cardsV2 `json:"cardsV2,omitempty"`
-}
 
 // Options to configure the Discord target
 type Options struct {

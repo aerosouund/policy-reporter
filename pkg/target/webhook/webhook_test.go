@@ -91,6 +91,6 @@ func Test_UITarget(t *testing.T) {
 			Host:       "\\localhost:8080",
 			HTTPClient: testClient{callback, 200},
 		})
-		client.Send(fixtures.CompleteTargetSendResult)
+		client.Send(&payload.PolicyReportResultPayload{Result: fixtures.CompleteTargetSendResult})
 	})
 }

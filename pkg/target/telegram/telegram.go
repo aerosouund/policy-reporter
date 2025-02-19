@@ -64,7 +64,7 @@ func (e *client) Send(result payload.Payload) {
 		ChatID:                e.chatID,
 	}
 
-	payloadText, err := result.ToTelegram()
+	payloadText, err := result.ToTelegram(e.chatID)
 	if err != nil {
 		zap.L().Error(e.Name()+": PUSH FAILED", zap.Error(err))
 		fmt.Println(err)

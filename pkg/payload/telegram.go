@@ -1,8 +1,10 @@
 package payload
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/kyverno/policy-reporter/pkg/crd/api/policyreport/v1alpha2"
@@ -49,4 +51,43 @@ type values struct {
 	Resource *corev1.ObjectReference
 	Props    map[string]string
 	Priority string
+}
+
+func (s *PolicyReportResultPayload) ToTelegram(chatID string) (string, error) {
+	// if len(e.customFields) > 0 {
+	// 	props := make(map[string]string, 0)
+
+	// 	for property, value := range e.customFields {
+	// 		props[property] = value
+	// 	}
+
+	// 	for property, value := range result.Properties {
+	// 		props[property] = value
+	// 	}
+
+	// 	result.Properties = props
+	// }
+
+	var textBuffer bytes.Buffer
+
+	ttmpl, err := template.New("telegram").Funcs(template.FuncMap{"escape": escape}).Parse(notificationTempl)
+	if err != nil {
+		return "", err
+	}
+
+	var res *corev1.ObjectReference
+	if s.Result.HasResource() {
+		res = s.Result.GetResource()
+	}
+
+	err = ttmpl.Execute(&textBuffer, values{
+		Result:   s.Result,
+		Time:     time.Now(),
+		Resource: res,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return textBuffer.String(), nil
 }

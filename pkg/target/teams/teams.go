@@ -9,6 +9,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/kyverno/policy-reporter/pkg/crd/api/policyreport/v1alpha2"
+	"github.com/kyverno/policy-reporter/pkg/payload"
 	"github.com/kyverno/policy-reporter/pkg/target"
 	"github.com/kyverno/policy-reporter/pkg/target/formatting"
 	"github.com/kyverno/policy-reporter/pkg/target/http"
@@ -31,8 +32,8 @@ type client struct {
 	client       http.Client
 }
 
-func (s *client) Send(result v1alpha2.PolicyReportResult) {
-	s.PostMessage(s.newMessage(result.GetResource(), []v1alpha2.PolicyReportResult{result}))
+func (s *client) Send(result payload.Payload) {
+	s.PostMessage(result.ToTeams())
 }
 
 func (s *client) CleanUp(_ context.Context, _ v1alpha2.ReportInterface) {}
