@@ -32,7 +32,7 @@ type DiscordPayload struct {
 	Embeds  []embed `json:"embeds"`
 }
 
-func (s *PolicyReportResultPayload) ToDiscord(customFields map[string]string) DiscordPayload {
+func (s *PolicyReportResultPayload) ToDiscord() DiscordPayload {
 	color := discordColors[s.Result.Severity]
 
 	embedFields := make([]embedField, 0)
@@ -64,10 +64,6 @@ func (s *PolicyReportResultPayload) ToDiscord(customFields map[string]string) Di
 	}
 
 	for property, value := range s.Result.Properties {
-		embedFields = append(embedFields, embedField{strings.Title(property), value, true})
-	}
-
-	for property, value := range customFields {
 		embedFields = append(embedFields, embedField{strings.Title(property), value, true})
 	}
 

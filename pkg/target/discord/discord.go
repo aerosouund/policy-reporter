@@ -25,7 +25,8 @@ type client struct {
 }
 
 func (d *client) Send(result payload.Payload) {
-	req, err := http.CreateJSONRequest("POST", d.webhook, result.ToDiscord(d.customFields))
+	result.AddCustomFields(d.customFields)
+	req, err := http.CreateJSONRequest("POST", d.webhook, result.ToDiscord())
 	if err != nil {
 		return
 	}

@@ -31,6 +31,7 @@ func newRunCMD(version string) *cobra.Command {
 				return err
 			}
 			c.Version = version
+			c.K8sClient.Kubeconfig = "/Users/ammaryasser/Downloads/ips"
 
 			var k8sConfig *rest.Config
 			if c.K8sClient.Kubeconfig != "" {

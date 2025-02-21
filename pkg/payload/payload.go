@@ -17,20 +17,16 @@ var (
 )
 
 type Payload interface {
-	// CreationTimestamp() time.Time
 	GetID() string
-
 	Body() http.Result
 	ToLoki(map[string]string) Stream
 	ToTelegram(chatId string) (string, error)
 	ToTeams() adaptivecard.Container
-
 	ToSlack(channel string) *slack.Attachment
-	ToDiscord(customFields map[string]string) DiscordPayload // todo: custom fields
+	ToDiscord() DiscordPayload
 	BlobStorageKey(string) string
 	KinesisKey() string
 	AddCustomFields(map[string]string)
-
 	ToGoogleChat() (*GCPayload, error)
 }
 
