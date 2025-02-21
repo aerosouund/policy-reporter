@@ -11,6 +11,7 @@ import (
 	"github.com/kyverno/policy-reporter/pkg/crd/api/policyreport/v1alpha2"
 	"github.com/kyverno/policy-reporter/pkg/fixtures"
 	"github.com/kyverno/policy-reporter/pkg/listener"
+	"github.com/kyverno/policy-reporter/pkg/payload"
 	"github.com/kyverno/policy-reporter/pkg/target"
 )
 
@@ -27,7 +28,7 @@ func (c *client) Cache() cache.Cache {
 	return cache.NewInMermoryCache(time.Second, time.Second)
 }
 
-func (c *client) Send(result v1alpha2.PolicyReportResult) {
+func (c *client) Send(result payload.Payload) {
 	c.Called = true
 }
 
@@ -67,7 +68,7 @@ func (c *client) CleanUp(_ context.Context, _ v1alpha2.ReportInterface) {
 	c.cleanupCalled = true
 }
 
-func (c *client) BatchSend(_ v1alpha2.ReportInterface, _ []v1alpha2.PolicyReportResult) {
+func (c *client) BatchSend(_ v1alpha2.ReportInterface, _ []payload.Payload) {
 	c.Called = true
 }
 

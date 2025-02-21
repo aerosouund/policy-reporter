@@ -1,9 +1,9 @@
 package webhook
 
 import (
+	"github.com/kyverno/policy-reporter/pkg/http"
 	"github.com/kyverno/policy-reporter/pkg/payload"
 	"github.com/kyverno/policy-reporter/pkg/target"
-	"github.com/kyverno/policy-reporter/pkg/target/http"
 )
 
 // Options to configure the Discord target
@@ -24,12 +24,10 @@ type client struct {
 }
 
 func (e *client) Send(result payload.Payload) {
-	resultBody := result.Body()
 	if len(e.customFields) > 0 {
-		for property, value := range e.customFields {
-			resultBody[property] = value
-		}
+		result.AddCustomFields(e.customFields)
 	}
+	resultBody := result.Body()
 
 	req, err := http.CreateJSONRequest("POST", e.host, resultBody)
 	if err != nil {

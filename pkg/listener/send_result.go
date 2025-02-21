@@ -15,13 +15,13 @@ import (
 const SendResults = "send_results_listener"
 
 func NewSendResultListener(targets *target.Collection) report.PolicyReportResultListener {
-	return func(rep v1alpha2.ReportInterface, r payload.Payload) {
+	return func(rep v1alpha2.ReportInterface, r v1alpha2.PolicyReportResult) {
 		clients := targets.SingleSendClients()
 		wg := &sync.WaitGroup{}
 		wg.Add(len(clients))
 
 		for _, t := range clients {
-			go func(target target.Client, re v1alpha2.ReportInterface, result payload.Payload) {
+			go func(target target.Client, re v1alpha2.ReportInterface, result v1alpha2.PolicyReportResult) {
 				defer wg.Done()
 				if !result.HasResource() && re.GetScope() != nil {
 					result.Resources = []corev1.ObjectReference{*re.GetScope()}
@@ -33,7 +33,7 @@ func NewSendResultListener(targets *target.Collection) report.PolicyReportResult
 				}
 
 				target.Cache().AddReport(re)
-				target.Send(result)
+				target.Send(&payload.PolicyReportResultPayload{Result: result})
 			}(t, rep, r)
 		}
 

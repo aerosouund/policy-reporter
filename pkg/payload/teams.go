@@ -4,55 +4,36 @@ import (
 	"fmt"
 
 	"github.com/atc0005/go-teams-notify/v2/adaptivecard"
-	"github.com/kyverno/policy-reporter/pkg/crd/api/policyreport/v1alpha2"
 	"github.com/kyverno/policy-reporter/pkg/helper"
-	"github.com/kyverno/policy-reporter/pkg/target/formatting"
 )
 
-func (p *PolicyReportResultPayload) ToTeams(result []v1alpha2.PolicyReportResult) *adaptivecard.Message {
-	header := adaptivecard.NewContainer()
+func (p *PolicyReportResultPayload) ToTeams() adaptivecard.Container {
+	stats := newFactSet()
+	stats.Facts = append(stats.Facts, adaptivecard.Fact{Title: "Status", Value: string(p.Result.Severity)})
 
-	header.AddElement(false, adaptivecard.NewTitleTextBlock(formatting.ResourceString(p.Result.GetResource()), true))
-
-	header.AddElement(false, adaptivecard.NewTextBlock(fmt.Sprintf("Received %d new Policy Report Results", len(results)), true))
-
-	card := adaptivecard.NewCard()
-	card.SetFullWidth()
-	card.AddContainer(true, header)
-
-	for _, result := range results {
-		stats := newFactSet()
-		stats.Facts = append(stats.Facts, adaptivecard.Fact{Title: "Status", Value: string(result.Result)})
-
-		if result.Severity != "" {
-			stats.Facts = append(stats.Facts, adaptivecard.Fact{Title: "Severity", Value: string(result.Severity)})
-		}
-
-		policy := fmt.Sprintf("Policy: %s", result.Policy)
-
-		if result.Rule != "" {
-			policy = fmt.Sprintf("%s/%s", policy, result.Rule)
-		}
-
-		r := adaptivecard.NewContainer()
-		r.Separator = true
-		r.Spacing = adaptivecard.SpacingLarge
-		r.AddElement(false, newSubTitle(policy))
-		r.AddElement(false, adaptivecard.NewTextBlock(result.Category, true))
-		r.AddElement(false, stats)
-		r.AddElement(false, adaptivecard.NewTextBlock(result.Message, true))
-
-		if len(result.Properties) > 0 {
-			r.AddElement(false, MapToColumnSet(result.Properties))
-		}
-
-		card.AddContainer(false, r)
+	if p.Result.Severity != "" {
+		stats.Facts = append(stats.Facts, adaptivecard.Fact{Title: "Severity", Value: string(p.Result.Severity)})
 	}
 
-	msg := adaptivecard.NewMessage()
-	msg.Attach(card)
+	policy := fmt.Sprintf("Policy: %s", p.Result.Policy)
 
-	return msg
+	if p.Result.Rule != "" {
+		policy = fmt.Sprintf("%s/%s", policy, p.Result.Rule)
+	}
+
+	r := adaptivecard.NewContainer()
+	r.Separator = true
+	r.Spacing = adaptivecard.SpacingLarge
+	r.AddElement(false, newSubTitle(policy))
+	r.AddElement(false, adaptivecard.NewTextBlock(p.Result.Category, true))
+	r.AddElement(false, stats)
+	r.AddElement(false, adaptivecard.NewTextBlock(p.Result.Message, true))
+
+	if len(p.Result.Properties) > 0 {
+		r.AddElement(false, MapToColumnSet(p.Result.Properties))
+	}
+
+	return r
 }
 
 func newFactSet() adaptivecard.Element {

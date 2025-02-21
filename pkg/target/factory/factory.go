@@ -14,6 +14,7 @@ import (
 
 	"github.com/kyverno/policy-reporter/pkg/crd/api/targetconfig/v1alpha1"
 	"github.com/kyverno/policy-reporter/pkg/filters"
+	"github.com/kyverno/policy-reporter/pkg/http"
 	"github.com/kyverno/policy-reporter/pkg/kubernetes/secrets"
 	"github.com/kyverno/policy-reporter/pkg/report"
 	"github.com/kyverno/policy-reporter/pkg/target"
@@ -21,7 +22,6 @@ import (
 	"github.com/kyverno/policy-reporter/pkg/target/elasticsearch"
 	"github.com/kyverno/policy-reporter/pkg/target/gcs"
 	"github.com/kyverno/policy-reporter/pkg/target/googlechat"
-	"github.com/kyverno/policy-reporter/pkg/target/http"
 	"github.com/kyverno/policy-reporter/pkg/target/kinesis"
 	"github.com/kyverno/policy-reporter/pkg/target/loki"
 	"github.com/kyverno/policy-reporter/pkg/target/provider/aws"
@@ -707,13 +707,14 @@ func (f *TargetFactory) CreateSecurityHubTarget(config, parent *v1alpha1.Config[
 		Delay:        time.Duration(config.Config.DelayInSeconds) * time.Second,
 		Synchronize:  config.Config.Synchronize,
 	})
+	_ = hub // todo: implement security hub
 
 	return &target.Target{
 		ID:           uuid.NewString(),
 		Type:         target.SecurityHub,
 		Config:       config,
 		ParentConfig: parent,
-		Client:       hub,
+		// Client:       hub, todo: implement policy
 	}
 }
 

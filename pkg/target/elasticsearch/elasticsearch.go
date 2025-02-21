@@ -3,9 +3,9 @@ package elasticsearch
 import (
 	"time"
 
+	"github.com/kyverno/policy-reporter/pkg/http"
 	"github.com/kyverno/policy-reporter/pkg/payload"
 	"github.com/kyverno/policy-reporter/pkg/target"
-	"github.com/kyverno/policy-reporter/pkg/target/http"
 )
 
 // Options to configure elasticsearch target
@@ -70,12 +70,10 @@ func (e *client) Send(result payload.Payload) {
 		host = e.host + "/" + e.index + "-" + time.Now().Format("2006.01.02") + "/" + apiSuffix
 	}
 
-	resultBody := result.Body()
 	if len(e.customFields) > 0 {
-		for property, value := range e.customFields {
-			resultBody[property] = value
-		}
+		result.AddCustomFields(e.customFields)
 	}
+	resultBody := result.Body()
 
 	req, err := http.CreateJSONRequest("POST", host, resultBody)
 	if err != nil {

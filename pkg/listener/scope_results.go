@@ -5,6 +5,7 @@ import (
 
 	"github.com/kyverno/policy-reporter/pkg/crd/api/policyreport/v1alpha2"
 	"github.com/kyverno/policy-reporter/pkg/helper"
+	"github.com/kyverno/policy-reporter/pkg/payload"
 	"github.com/kyverno/policy-reporter/pkg/report"
 	"github.com/kyverno/policy-reporter/pkg/target"
 )
@@ -30,14 +31,14 @@ func NewSendScopeResultsListener(targets *target.Collection) report.ScopeResults
 					return
 				}
 
-				var resultsToSend []v1alpha2.PolicyReportResult
+				var resultsToSend []payload.Payload
 				existing := target.Cache().GetResults(re.GetID())
 				for _, r := range filtered {
 					if helper.Contains(r.GetID(), existing) {
 						continue
 					}
 
-					resultsToSend = append(resultsToSend, r)
+					resultsToSend = append(resultsToSend, &payload.PolicyReportResultPayload{Result: r})
 				}
 				target.Cache().AddReport(re)
 				if len(resultsToSend) > 0 {

@@ -27,13 +27,10 @@ type client struct {
 }
 
 func (c *client) Send(result payload.Payload) {
-	resultBody := result.Body()
 	if len(c.customFields) > 0 {
-		for property, value := range c.customFields {
-			resultBody[property] = value
-		}
+		result.AddCustomFields(c.customFields)
 	}
-
+	resultBody := result.Body()
 	body := new(bytes.Buffer)
 
 	if err := json.NewEncoder(body).Encode(resultBody); err != nil {
