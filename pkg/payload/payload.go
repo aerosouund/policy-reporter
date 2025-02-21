@@ -57,7 +57,6 @@ func (p *PolicyReportResultPayload) BlobStorageKey(prefix string) string {
 	return fmt.Sprintf("%s/%s/%s-%s-%s.json", prefix, t.Format("2006-01-02"), p.Result.Policy, p.Result.ID, t.Format(time.RFC3339Nano))
 }
 
-// should be the equivalent of get json body
 func (p *PolicyReportResultPayload) Body() http.Result {
 	return http.NewJSONResult(p.Result)
 }
