@@ -105,6 +105,7 @@ type GCSOptions struct {
 type Config[T any] struct {
 	Config          *T                `mapstructure:"config" json:"config"`
 	Name            string            `mapstructure:"name" json:"name"`
+	Tenant          string            `mapstructure:"tenant" json:"tenant"`
 	MinimumSeverity string            `mapstructure:"minimumSeverity" json:"minimumSeverity"`
 	Filter          filters.Filter    `mapstructure:"filter" json:"filter"`
 	SecretRef       string            `mapstructure:"secretRef" json:"secretRef"`
@@ -119,6 +120,8 @@ type Config[T any] struct {
 type ConfigStrict struct {
 	// +optional
 	Name string `mapstructure:"name" json:"name"`
+	// +optional
+	Tenant string `mapstructure:"tenant" json:"tenant"`
 	// +optional
 	MinimumSeverity string `mapstructure:"minimumSeverity" json:"minimumSeverity"`
 	// +optional
