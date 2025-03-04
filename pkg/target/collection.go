@@ -48,6 +48,7 @@ type TargetConfig interface {
 
 type Target struct {
 	ID           string
+	Tenant       string
 	Type         TargetType
 	Client       Client
 	ParentConfig TargetConfig
@@ -117,6 +118,14 @@ func (c *Collection) Client(name string) Client {
 	return helper.Find(c.Clients(), func(c Client) bool {
 		return c.Name() == name
 	}, nil)
+}
+
+func (c *Collection) TenantClients(tenant string) []Client {
+	cs := helper.Filter(c.Clients(), func(c Client) bool {
+		return c.Tenant() == tenant
+	})
+
+	return cs
 }
 
 func (c *Collection) SingleSendClients() []Client {

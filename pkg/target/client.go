@@ -26,6 +26,8 @@ const (
 
 // Client for a provided Target
 type Client interface {
+	// Get the tenant responsible for this client
+	Tenant() string
 	// Send the given Result to the configured Target
 	Send(result payload.Payload)
 	// BatchSend the given Results of a single PolicyReport to the configured Target
@@ -192,6 +194,7 @@ type BaseClient struct {
 	reportFilter          *report.ReportFilter
 	creationTimestamp     time.Time
 	polrCache             cache.Cache
+	tenant                string
 }
 
 type ClientOptions struct {
@@ -199,6 +202,7 @@ type ClientOptions struct {
 	SkipExistingOnStartup bool
 	ResultFilter          *report.ResultFilter
 	ReportFilter          *report.ReportFilter
+	Tenant                string
 }
 
 func (c *BaseClient) Name() string {
@@ -265,10 +269,18 @@ func (c *BaseClient) Reset(_ context.Context) error {
 	return nil
 }
 
+func (c *BaseClient) Tenant() string {
+	return c.tenant
+}
+
+func (c *BaseClient) SetTenant(t string) {
+	c.tenant = t
+}
+
 func (c *BaseClient) CleanUp(_ context.Context, _ v1alpha2.ReportInterface) {}
 
 func (c *BaseClient) BatchSend(_ v1alpha2.ReportInterface, _ []payload.Payload) {}
 
 func NewBaseClient(options ClientOptions) BaseClient {
-	return BaseClient{options.Name, options.SkipExistingOnStartup, options.ResultFilter, options.ReportFilter, time.Now(), cache.NewInMermoryCache(6*time.Hour, 10*time.Minute)}
+	return BaseClient{options.Name, options.SkipExistingOnStartup, options.ResultFilter, options.ReportFilter, time.Now(), cache.NewInMermoryCache(6*time.Hour, 10*time.Minute), options.Tenant}
 }

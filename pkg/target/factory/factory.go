@@ -132,6 +132,7 @@ func (f *TargetFactory) CreateSingleClient(tc *v1alpha1.TargetConfig) (*target.T
 		t = createClients(tc.Name, createConfig(tc, tc.Spec.Teams), f.CreateTeamsTarget)[0]
 		return t, nil
 	}
+
 	return nil, fmt.Errorf("invalid target type passed")
 }
 
@@ -170,6 +171,7 @@ func (f *TargetFactory) CreateSlackTarget(config, parent *v1alpha1.Config[v1alph
 		Client: slack.NewClient(slack.Options{
 			ClientOptions: target.ClientOptions{
 				Name:                  config.Name,
+				Tenant:                config.Tenant,
 				SkipExistingOnStartup: config.SkipExisting,
 				ResultFilter:          f.createResultFilter(config.Filter, config.MinimumSeverity, config.Sources),
 				ReportFilter:          createReportFilter(config.Filter),
@@ -220,6 +222,7 @@ func (f *TargetFactory) CreateLokiTarget(config, parent *v1alpha1.Config[v1alpha
 		Client: loki.NewClient(loki.Options{
 			ClientOptions: target.ClientOptions{
 				Name:                  config.Name,
+				Tenant:                config.Tenant,
 				SkipExistingOnStartup: config.SkipExisting,
 				ResultFilter:          f.createResultFilter(config.Filter, config.MinimumSeverity, config.Sources),
 				ReportFilter:          createReportFilter(config.Filter),
@@ -273,6 +276,7 @@ func (f *TargetFactory) CreateElasticsearchTarget(config, parent *v1alpha1.Confi
 		Client: elasticsearch.NewClient(elasticsearch.Options{
 			ClientOptions: target.ClientOptions{
 				Name:                  config.Name,
+				Tenant:                config.Tenant,
 				SkipExistingOnStartup: config.SkipExisting,
 				ResultFilter:          f.createResultFilter(config.Filter, config.MinimumSeverity, config.Sources),
 				ReportFilter:          createReportFilter(config.Filter),
@@ -320,6 +324,7 @@ func (f *TargetFactory) CreateDiscordTarget(config, parent *v1alpha1.Config[v1al
 		Client: discord.NewClient(discord.Options{
 			ClientOptions: target.ClientOptions{
 				Name:                  config.Name,
+				Tenant:                config.Tenant,
 				SkipExistingOnStartup: config.SkipExisting,
 				ResultFilter:          f.createResultFilter(config.Filter, config.MinimumSeverity, config.Sources),
 				ReportFilter:          createReportFilter(config.Filter),
@@ -360,6 +365,7 @@ func (f *TargetFactory) CreateTeamsTarget(config, parent *v1alpha1.Config[v1alph
 		Client: teams.NewClient(teams.Options{
 			ClientOptions: target.ClientOptions{
 				Name:                  config.Name,
+				Tenant:                config.Tenant,
 				SkipExistingOnStartup: config.SkipExisting,
 				ResultFilter:          f.createResultFilter(config.Filter, config.MinimumSeverity, config.Sources),
 				ReportFilter:          createReportFilter(config.Filter),
@@ -401,6 +407,7 @@ func (f *TargetFactory) CreateWebhookTarget(config, parent *v1alpha1.Config[v1al
 		Client: webhook.NewClient(webhook.Options{
 			ClientOptions: target.ClientOptions{
 				Name:                  config.Name,
+				Tenant:                config.Tenant,
 				SkipExistingOnStartup: config.SkipExisting,
 				ResultFilter:          f.createResultFilter(config.Filter, config.MinimumSeverity, config.Sources),
 				ReportFilter:          createReportFilter(config.Filter),
@@ -465,6 +472,7 @@ func (f *TargetFactory) CreateTelegramTarget(config, parent *v1alpha1.Config[v1a
 		Client: telegram.NewClient(telegram.Options{
 			ClientOptions: target.ClientOptions{
 				Name:                  config.Name,
+				Tenant:                config.Tenant,
 				SkipExistingOnStartup: config.SkipExisting,
 				ResultFilter:          f.createResultFilter(config.Filter, config.MinimumSeverity, config.Sources),
 				ReportFilter:          createReportFilter(config.Filter),
@@ -507,6 +515,7 @@ func (f *TargetFactory) CreateGoogleChatTarget(config, parent *v1alpha1.Config[v
 		Client: googlechat.NewClient(googlechat.Options{
 			ClientOptions: target.ClientOptions{
 				Name:                  config.Name,
+				Tenant:                config.Tenant,
 				SkipExistingOnStartup: config.SkipExisting,
 				ResultFilter:          f.createResultFilter(config.Filter, config.MinimumSeverity, config.Sources),
 				ReportFilter:          createReportFilter(config.Filter),
@@ -578,6 +587,7 @@ func (f *TargetFactory) CreateS3Target(config, parent *v1alpha1.Config[v1alpha1.
 		Client: s3.NewClient(s3.Options{
 			ClientOptions: target.ClientOptions{
 				Name:                  config.Name,
+				Tenant:                config.Tenant,
 				SkipExistingOnStartup: config.SkipExisting,
 				ResultFilter:          f.createResultFilter(config.Filter, config.MinimumSeverity, config.Sources),
 				ReportFilter:          createReportFilter(config.Filter),
@@ -643,6 +653,7 @@ func (f *TargetFactory) CreateKinesisTarget(config, parent *v1alpha1.Config[v1al
 			ClientOptions: target.ClientOptions{
 				Name:                  config.Name,
 				SkipExistingOnStartup: config.SkipExisting,
+				Tenant:                config.Tenant,
 				ResultFilter:          f.createResultFilter(config.Filter, config.MinimumSeverity, config.Sources),
 				ReportFilter:          createReportFilter(config.Filter),
 			},
@@ -697,6 +708,7 @@ func (f *TargetFactory) CreateSecurityHubTarget(config, parent *v1alpha1.Config[
 	hub := securityhub.NewClient(securityhub.Options{
 		ClientOptions: target.ClientOptions{
 			Name:                  config.Name,
+			Tenant:                config.Tenant,
 			SkipExistingOnStartup: config.SkipExisting,
 			ResultFilter:          f.createResultFilter(config.Filter, config.MinimumSeverity, config.Sources),
 			ReportFilter:          createReportFilter(config.Filter),
@@ -769,6 +781,7 @@ func (f *TargetFactory) CreateGCSTarget(config, parent *v1alpha1.Config[v1alpha1
 		Client: gcs.NewClient(gcs.Options{
 			ClientOptions: target.ClientOptions{
 				Name:                  config.Name,
+				Tenant:                config.Tenant,
 				SkipExistingOnStartup: config.SkipExisting,
 				ResultFilter:          f.createResultFilter(config.Filter, config.MinimumSeverity, config.Sources),
 				ReportFilter:          createReportFilter(config.Filter),
@@ -1005,6 +1018,7 @@ func createConfig[T any](tc *v1alpha1.TargetConfig, config *T) *v1alpha1.Config[
 		Name:            tc.Spec.Name,
 		MinimumSeverity: tc.Spec.MinimumSeverity,
 		Filter:          tc.Spec.Filter,
+		Tenant:          tc.Spec.Tenant,
 		SecretRef:       tc.Spec.SecretRef,
 		SkipExisting:    tc.Spec.SkipExisting,
 		CustomFields:    tc.Spec.CustomFields,
