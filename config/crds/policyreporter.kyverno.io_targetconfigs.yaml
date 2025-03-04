@@ -366,6 +366,8 @@ spec:
                 - token
                 - webhook
                 type: object
+              tenant:
+                type: string
               webhook:
                 properties:
                   certificate:
