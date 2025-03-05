@@ -26,8 +26,6 @@ const (
 
 // Client for a provided Target
 type Client interface {
-	// Get the tenant responsible for this client
-	Tenant() string
 	// Send the given Result to the configured Target
 	Send(result payload.Payload)
 	// BatchSend the given Results of a single PolicyReport to the configured Target

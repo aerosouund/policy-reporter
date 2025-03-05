@@ -120,14 +120,6 @@ func (c *Collection) Client(name string) Client {
 	}, nil)
 }
 
-func (c *Collection) TenantClients(tenant string) []Client {
-	cs := helper.Filter(c.Clients(), func(c Client) bool {
-		return c.Tenant() == tenant
-	})
-
-	return cs
-}
-
 func (c *Collection) SingleSendClients() []Client {
 	return helper.Filter(c.Clients(), func(c Client) bool {
 		return c.Type() == SingleSend

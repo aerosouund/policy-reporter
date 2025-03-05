@@ -15,13 +15,14 @@ import (
 )
 
 type TargetConfigClient struct {
-	tcClient      tcv1alpha1.Interface
-	targetFactory target.Factory
-	targetClients *target.Collection
-	logger        *zap.Logger
-	informer      cache.SharedIndexInformer
-	tcCount       int
-	hasSynced     bool
+	TargetFactory target.Factory
+	TargetClients *target.Collection
+	Logger        *zap.Logger
+
+	tcClient  tcv1alpha1.Interface
+	informer  cache.SharedIndexInformer
+	tcCount   int
+	hasSynced bool
 }
 
 type EventType string
@@ -37,49 +38,20 @@ type TcEvent struct {
 	RestartPolrInformer bool
 }
 
+func NewTargetConfigClient(tcClient tcv1alpha1.Interface, f target.Factory, targets *target.Collection, logger *zap.Logger) *TargetConfigClient {
+	return &TargetConfigClient{
+		TargetFactory: f,
+		TargetClients: targets,
+		Logger:        logger,
+		tcClient:      tcClient,
+	}
+}
+
 func (c *TargetConfigClient) TargetConfigCount() int {
 	return c.tcCount
 }
 
-func (c *TargetConfigClient) configureInformer(targetChan chan TcEvent) {
-	c.informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc: func(obj interface{}) {
-			tc := obj.(*v1alpha1.TargetConfig)
-			c.logger.Info(fmt.Sprintf("new target: %s", tc.Name))
-
-			t, err := c.targetFactory.CreateSingleClient(tc)
-			if err != nil {
-				c.logger.Error("unable to create target from TargetConfig: " + err.Error())
-				return
-			}
-
-			c.targetClients.AddTarget(tc.Name, t)
-			targetChan <- TcEvent{Type: CreateTcEvent, Targets: c.targetClients, RestartPolrInformer: !tc.Spec.SkipExisting}
-		},
-		UpdateFunc: func(oldObj, newObj interface{}) {
-			tc := newObj.(*v1alpha1.TargetConfig)
-			c.logger.Info(fmt.Sprintf("update target: %s", tc.Name))
-
-			t, err := c.targetFactory.CreateSingleClient(tc)
-			if err != nil {
-				c.logger.Error("unable to create target from TargetConfig: " + err.Error())
-				return
-			}
-
-			c.targetClients.AddTarget(tc.Name, t)
-			targetChan <- TcEvent{Type: CreateTcEvent, Targets: c.targetClients, RestartPolrInformer: !tc.Spec.SkipExisting}
-		},
-		DeleteFunc: func(obj interface{}) {
-			tc := obj.(*v1alpha1.TargetConfig)
-			c.logger.Info(fmt.Sprintf("deleting target: %s", tc.Name))
-
-			c.targetClients.RemoveTarget(tc.Name)
-			targetChan <- TcEvent{Type: DeleteTcEvent, Targets: c.targetClients}
-		},
-	})
-}
-
-func (c *TargetConfigClient) CreateInformer(targetChan chan TcEvent) error {
+func (c *TargetConfigClient) CreateInformer(targetChan chan TcEvent, addFn, delFn func(interface{}), upFn func(interface{}, interface{})) error {
 	tcInformer := tcinformer.NewSharedInformerFactory(c.tcClient, 0)
 	inf := tcInformer.Policyreporter().V1alpha1().TargetConfigs().Informer()
 	c.informer = inf
@@ -90,7 +62,7 @@ func (c *TargetConfigClient) CreateInformer(targetChan chan TcEvent) error {
 	}
 
 	c.tcCount = len(tcs.Items)
-	c.configureInformer(targetChan)
+	c.configureInformer(addFn, delFn, upFn)
 	return nil
 }
 
@@ -102,19 +74,61 @@ func (c *TargetConfigClient) Run(stopChan chan struct{}) {
 	go c.informer.Run(stopChan)
 
 	if !cache.WaitForCacheSync(stopChan, c.informer.HasSynced) {
-		c.logger.Error("Failed to sync target config cache")
+		c.Logger.Error("Failed to sync target config cache")
 		return
 	}
 
 	c.hasSynced = true
-	c.logger.Info("target config cache synced")
+	c.Logger.Info("target config cache synced")
 }
 
-func NewTargetConfigClient(tcClient tcv1alpha1.Interface, f target.Factory, targets *target.Collection, logger *zap.Logger) *TargetConfigClient {
-	return &TargetConfigClient{
-		tcClient:      tcClient,
-		targetFactory: f,
-		targetClients: targets,
-		logger:        logger,
+func (c *TargetConfigClient) configureInformer(addFn, delFn func(interface{}), upFn func(interface{}, interface{})) {
+	c.informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc:    addFn,
+		UpdateFunc: upFn,
+		DeleteFunc: delFn,
+	})
+}
+
+func AddFn(c *TargetConfigClient, targetChan chan TcEvent) func(interface{}) {
+	return func(obj interface{}) {
+		tc := obj.(*v1alpha1.TargetConfig)
+		c.Logger.Info(fmt.Sprintf("new target: %s", tc.Name))
+
+		t, err := c.TargetFactory.CreateSingleClient(tc)
+		if err != nil {
+			c.Logger.Error("unable to create target from TargetConfig: " + err.Error())
+			return
+		}
+
+		c.TargetClients.AddTarget(tc.Name, t)
+		targetChan <- TcEvent{Type: CreateTcEvent, Targets: c.TargetClients, RestartPolrInformer: !tc.Spec.SkipExisting}
+	}
+}
+
+func DelFn(c *TargetConfigClient, targetChan chan TcEvent) func(interface{}) {
+	return func(obj interface{}) {
+		tc := obj.(*v1alpha1.TargetConfig)
+		c.Logger.Info(fmt.Sprintf("deleting target: %s", tc.Name))
+
+		c.TargetClients.RemoveTarget(tc.Name)
+		targetChan <- TcEvent{Type: DeleteTcEvent, Targets: c.TargetClients}
+	}
+}
+
+func UpFn(c *TargetConfigClient, targetChan chan TcEvent) func(interface{}, interface{}) {
+	return func(oldObj, newObj interface{}) {
+		tc := newObj.(*v1alpha1.TargetConfig)
+		c.Logger.Info(fmt.Sprintf("update target: %s", tc.Name))
+
+		t, err := c.TargetFactory.CreateSingleClient(tc)
+		if err != nil {
+			c.Logger.Error("unable to create target from TargetConfig: " + err.Error())
+			return
+		}
+
+		c.TargetClients.AddTarget(tc.Name, t)
+		targetChan <- TcEvent{Type: CreateTcEvent, Targets: c.TargetClients, RestartPolrInformer: !tc.Spec.SkipExisting}
+
 	}
 }

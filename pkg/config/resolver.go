@@ -594,7 +594,7 @@ func (r *Resolver) TargetConfigClient(targetChan chan targetconfig.TcEvent) (*ta
 	}
 
 	tcc := targetconfig.NewTargetConfigClient(tcClient, r.TargetFactory(), r.TargetClients(), r.logger)
-	err = tcc.CreateInformer(targetChan)
+	err = tcc.CreateInformer(targetChan, targetconfig.AddFn(tcc, targetChan), targetconfig.DelFn(tcc, targetChan), targetconfig.UpFn(tcc, targetChan))
 	if err != nil {
 		return nil, err
 	}
