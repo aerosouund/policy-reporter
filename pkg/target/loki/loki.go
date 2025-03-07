@@ -41,16 +41,18 @@ type client struct {
 }
 
 func (l *client) Send(result payload.Payload) {
+	result.AddCustomFields(l.customFields)
 	l.send(Payload{
 		Streams: []payload.Stream{
-			result.ToLoki(l.customFields),
+			result.ToLoki(),
 		},
 	})
 }
 
 func (l *client) BatchSend(_ v1alpha2.ReportInterface, results []payload.Payload) {
 	l.send(Payload{Streams: helper.Map(results, func(result payload.Payload) payload.Stream {
-		return result.ToLoki(l.customFields)
+		result.AddCustomFields(l.customFields)
+		return result.ToLoki()
 	})})
 }
 

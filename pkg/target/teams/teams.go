@@ -2,7 +2,6 @@ package teams
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/atc0005/go-teams-notify/v2/adaptivecard"
 	"go.uber.org/zap"
@@ -12,7 +11,6 @@ import (
 	"github.com/kyverno/policy-reporter/pkg/http"
 	"github.com/kyverno/policy-reporter/pkg/payload"
 	"github.com/kyverno/policy-reporter/pkg/target"
-	"github.com/kyverno/policy-reporter/pkg/target/formatting"
 )
 
 // Options to configure the Slack target
@@ -75,14 +73,6 @@ func (s *client) Type() target.ClientType {
 
 func (s *client) newMessage(resource *corev1.ObjectReference, results []payload.Payload) *adaptivecard.Message {
 	header := adaptivecard.NewContainer()
-
-	if resource != nil {
-		header.AddElement(false, adaptivecard.NewTitleTextBlock(formatting.ResourceString(resource), true))
-	} else {
-		header.AddElement(false, adaptivecard.NewTitleTextBlock("New PolicyReport Results", true))
-	}
-
-	header.AddElement(false, adaptivecard.NewTextBlock(fmt.Sprintf("Received %d new Policy Report Results", len(results)), true))
 
 	if len(s.customFields) > 0 {
 		header.AddElement(false, MapToColumnSet(s.customFields))

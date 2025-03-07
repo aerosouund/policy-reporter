@@ -16,10 +16,19 @@ var (
 	labelReplacer = strings.NewReplacer("/", "")
 )
 
+type EmailMsg struct {
+	Recipients []string
+	Attachment []byte
+	CC         []string
+	Bcc        []string
+	Body       string
+	Subject    string
+}
+
 type Payload interface {
 	GetID() string
 	Body() http.Result
-	ToLoki(map[string]string) Stream
+	ToLoki() Stream
 	ToTelegram(chatId string) (string, error)
 	ToTeams() adaptivecard.Container
 	ToSlack(channel string) *slack.Attachment
@@ -28,6 +37,7 @@ type Payload interface {
 	KinesisKey() string
 	AddCustomFields(map[string]string)
 	ToGoogleChat() (*GCPayload, error)
+	ToEmail() (EmailMsg, error)
 }
 
 type PolicyReportResultPayload struct {

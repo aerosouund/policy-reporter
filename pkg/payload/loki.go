@@ -13,7 +13,7 @@ type Stream struct {
 	Values []Value           `json:"values"`
 }
 
-func (s *PolicyReportResultPayload) ToLoki(customFields map[string]string) Stream {
+func (s *PolicyReportResultPayload) ToLoki() Stream {
 	timestamp := time.Now()
 	if s.Result.Timestamp.Seconds != 0 {
 		timestamp = time.Unix(s.Result.Timestamp.Seconds, int64(s.Result.Timestamp.Nanos))
@@ -54,10 +54,6 @@ func (s *PolicyReportResultPayload) ToLoki(customFields map[string]string) Strea
 
 	for property, value := range s.Result.Properties {
 		labels[keyReplacer.Replace(property)] = labelReplacer.Replace(value)
-	}
-
-	for label, value := range customFields {
-		labels[keyReplacer.Replace(label)] = labelReplacer.Replace(value)
 	}
 
 	return Stream{
