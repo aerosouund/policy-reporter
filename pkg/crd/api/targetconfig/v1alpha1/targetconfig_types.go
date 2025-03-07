@@ -35,6 +35,9 @@ type TargetConfigSpec struct {
 	ConfigStrict `json:",inline"`
 
 	//+optional
+	MailGun *MailgunOptions `json:"mailgun,omitempty"`
+
+	//+optional
 	S3 *S3Options `json:"s3,omitempty"`
 
 	// +optional

@@ -24,6 +24,7 @@ import (
 	"github.com/kyverno/policy-reporter/pkg/target/googlechat"
 	"github.com/kyverno/policy-reporter/pkg/target/kinesis"
 	"github.com/kyverno/policy-reporter/pkg/target/loki"
+	"github.com/kyverno/policy-reporter/pkg/target/mailgun"
 	"github.com/kyverno/policy-reporter/pkg/target/provider/aws"
 	gs "github.com/kyverno/policy-reporter/pkg/target/provider/gcs"
 	"github.com/kyverno/policy-reporter/pkg/target/s3"
@@ -33,6 +34,7 @@ import (
 	"github.com/kyverno/policy-reporter/pkg/target/telegram"
 	"github.com/kyverno/policy-reporter/pkg/target/webhook"
 	"github.com/kyverno/policy-reporter/pkg/validate"
+	mg "github.com/mailgun/mailgun-go/v4"
 )
 
 // TargetFactory manages target creation
@@ -181,6 +183,46 @@ func (f *TargetFactory) CreateSlackTarget(config, parent *v1alpha1.Config[v1alph
 			CustomFields: config.CustomFields,
 			Headers:      config.Config.Headers,
 			HTTPClient:   http.NewClient("", false),
+		}),
+	}
+}
+
+func (f *TargetFactory) CreateMailgunTarget(config, parent *v1alpha1.Config[v1alpha1.MailgunOptions]) *target.Target {
+	if config == nil || config.Config == nil {
+		return nil
+	}
+
+	if (parent.SecretRef != "" && f.secretClient != nil) || parent.MountedSecret != "" {
+		f.mapSecretValues(parent, parent.SecretRef, parent.MountedSecret)
+	}
+
+	if (config.SecretRef != "" && f.secretClient != nil) || config.MountedSecret != "" {
+		f.mapSecretValues(config, config.SecretRef, config.MountedSecret)
+	}
+
+	if config.Config.Token == "" || config.Config.Domain == "" {
+		return nil
+	}
+
+	config.MapBaseParent(parent)
+
+	zap.S().Infof("%s configured", config.Name)
+	return &target.Target{
+		ID:           uuid.NewString(),
+		Type:         target.Mailgun,
+		Config:       config,
+		ParentConfig: parent,
+		Client: mailgun.NewClient(mailgun.Options{
+			ClientOptions: target.ClientOptions{
+				Name:                  config.Name,
+				Tenant:                config.Tenant,
+				SkipExistingOnStartup: config.SkipExisting,
+				ResultFilter:          f.createResultFilter(config.Filter, config.MinimumSeverity, config.Sources),
+				ReportFilter:          createReportFilter(config.Filter),
+			},
+			Mg:           mg.NewMailgun(config.Config.Domain, config.Config.Token),
+			CustomFields: config.CustomFields,
+			Sender:       config.Config.Sender,
 		}),
 	}
 }

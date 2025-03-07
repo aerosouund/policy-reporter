@@ -18,6 +18,12 @@ type WebhookOptions struct {
 	Headers     map[string]string `mapstructure:"headers" json:"headers"`
 }
 
+type MailgunOptions struct {
+	Token  string `mapstructure:"token" json:"token"`
+	Domain string `mapstructure:"domain" json:"domain"`
+	Sender string `mapstructure:"sender" json:"sender"`
+}
+
 type HostOptions struct {
 	Host string `mapstructure:"host" json:"host"`
 	// +optional
