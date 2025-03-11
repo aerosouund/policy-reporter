@@ -133,6 +133,9 @@ func (f *TargetFactory) CreateSingleClient(tc *v1alpha1.TargetConfig) (*target.T
 	} else if tc.Spec.Teams != nil {
 		t = createClients(tc.Name, createConfig(tc, tc.Spec.Teams), f.CreateTeamsTarget)[0]
 		return t, nil
+	} else if tc.Spec.MailGun != nil {
+		t = createClients(tc.Name, createConfig(tc, tc.Spec.MailGun), f.CreateMailgunTarget)[0]
+		return t, nil
 	}
 
 	return nil, fmt.Errorf("invalid target type passed")
@@ -1060,7 +1063,6 @@ func createConfig[T any](tc *v1alpha1.TargetConfig, config *T) *v1alpha1.Config[
 		Name:            tc.Spec.Name,
 		MinimumSeverity: tc.Spec.MinimumSeverity,
 		Filter:          tc.Spec.Filter,
-		Tenant:          tc.Spec.Tenant,
 		SecretRef:       tc.Spec.SecretRef,
 		SkipExisting:    tc.Spec.SkipExisting,
 		CustomFields:    tc.Spec.CustomFields,

@@ -61,6 +61,8 @@ spec:
               - kinesis
             - required:
               - teams
+            - required:
+              - mailgun
             properties:
               customFields:
                 additionalProperties:
@@ -237,6 +239,19 @@ spec:
                     type: string
                 required:
                 - host
+                type: object
+              mailgun:
+                properties:
+                  domain:
+                    type: string
+                  sender:
+                    type: string
+                  token:
+                    type: string
+                required:
+                - domain
+                - sender
+                - token
                 type: object
               minimumSeverity:
                 type: string
