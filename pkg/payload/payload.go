@@ -17,12 +17,12 @@ var (
 )
 
 type EmailMsg struct {
-	Recipients []string
-	Attachment []byte
-	CC         []string
-	Bcc        []string
-	Body       string
-	Subject    string
+	Recipients []string `json:"recipients"`
+	Attachment []byte   `json:"attachment"`
+	CC         []string `json:"cc"`
+	Bcc        []string `json:"bcc"`
+	Body       string   `json:"body"`
+	Subject    string   `json:"subject"`
 }
 
 type Payload interface {
