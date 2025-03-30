@@ -2,6 +2,7 @@ package mailgun
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/kyverno/policy-reporter/pkg/payload"
 	"github.com/kyverno/policy-reporter/pkg/target"
@@ -25,8 +26,11 @@ func (c *client) Send(p payload.Payload) {
 
 	for _, recip := range emailMsg.Recipients {
 		msg := mailgun.NewMessage(c.sender, emailMsg.Subject, emailMsg.Body, recip)
-		c.mg.Send(context.TODO(), msg)
-		zap.L().Info(c.Name() + ": email sent to " + recip)
+		ms, id, err := c.mg.Send(context.TODO(), msg)
+		if err != nil {
+			zap.L().Error(c.Name()+": email sending error", zap.Error(err))
+		}
+		zap.L().Info(c.Name() + fmt.Sprintf(": email sent to with ID: %s and message: %s\n"+recip, id, ms))
 	}
 }
 
