@@ -29,6 +29,7 @@ func (c *client) Send(p payload.Payload) {
 		ms, id, err := c.mg.Send(context.TODO(), msg)
 		if err != nil {
 			zap.L().Error(c.Name()+": email sending error", zap.Error(err))
+			return
 		}
 		zap.L().Info(c.Name() + fmt.Sprintf(": email sent to with ID: %s and message: %s\n"+recip, id, ms))
 	}
