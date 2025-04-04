@@ -109,17 +109,16 @@ func (s *client) Send(result payload.Payload) {
 	s.PostMessage(s.message(result))
 }
 
-func (s *client) BatchSend(report v1alpha2.ReportInterface, results payload.BatchPayload) {
-	rs := results.ToPayloadSlice()
+func (s *client) BatchSend(report v1alpha2.ReportInterface, results []payload.Payload) {
 	if report.GetScope() == nil {
-		for _, result := range rs {
+		for _, result := range results {
 			s.Send(result)
 		}
 
 		return
 	}
 
-	s.PostMessage(s.batchMessage(report, rs))
+	s.PostMessage(s.batchMessage(report, results))
 }
 
 func (s *client) PostMessage(message *slack.WebhookMessage) {

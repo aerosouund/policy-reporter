@@ -6,8 +6,10 @@ import (
 	"time"
 
 	"github.com/atc0005/go-teams-notify/v2/adaptivecard"
+	"github.com/aws/aws-sdk-go-v2/service/securityhub/types"
 	"github.com/kyverno/policy-reporter/pkg/crd/api/policyreport/v1alpha2"
 	"github.com/kyverno/policy-reporter/pkg/http"
+	"github.com/kyverno/policy-reporter/pkg/payload/scutils"
 	"github.com/slack-go/slack"
 )
 
@@ -26,18 +28,32 @@ type EmailMsg struct {
 }
 
 type Payload interface {
+	// Return a unique identifier to the payload
 	GetID() string
+	// Get the JSON representation of the payload
 	Body() http.Result
+	// Get the payload as a loki stream
 	ToLoki() Stream
+	// Get the Telegram notification string
 	ToTelegram(chatId string) (string, error)
+	// Get the Teams representation
 	ToTeams() adaptivecard.Container
+	// Get the Slack representation
 	ToSlack(channel string) *slack.Attachment
+	// Get the Discord representation
 	ToDiscord() DiscordPayload
-	BlobStorageKey(string) string
-	KinesisKey() string
-	AddCustomFields(map[string]string)
+	// Get the google chat representation
 	ToGoogleChat() (*GCPayload, error)
+	// Get the Email representation
 	ToEmail() (EmailMsg, error)
+	// Get the AWS security finding
+	ToSecurityHubFindings(scutils.SecurityHubConfig) *types.AwsSecurityFinding
+	// Get the key in a blob storage that this payload should be pushed to
+	BlobStorageKey(string) string
+	// Get the Kinesis key the payload should be pushed to
+	KinesisKey() string
+	// Add any custom key value pairs to the payload
+	AddCustomFields(map[string]string)
 }
 
 type PolicyReportResultPayload struct {

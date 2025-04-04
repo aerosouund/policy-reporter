@@ -1,81 +1,70 @@
 package securityhub
 
-import (
-	"context"
+// func (c *client) some(polr v1alpha2.ReportInterface, results []payload.Payload) {
+// 	/*
+// 		- should send result
+// 		- is result prexisted
+// 		- to securityhub
+// 	*/
 
-	hub "github.com/aws/aws-sdk-go-v2/service/securityhub"
-	"github.com/aws/aws-sdk-go-v2/service/securityhub/types"
-	"github.com/kyverno/policy-reporter/pkg/crd/api/policyreport/v1alpha2"
-	"github.com/kyverno/policy-reporter/pkg/helper"
-	"github.com/kyverno/policy-reporter/pkg/payload"
-	"go.uber.org/zap"
-)
+// 	// get results that are failures
+// 	results = filterResults(results)
+// 	if len(results) == 0 {
+// 		return
+// 	}
 
-func (c *client) some(polr v1alpha2.ReportInterface, results []payload.Payload) {
-	/*
-		- should send result
-		- is result prexisted
-		- to securityhub
-	*/
+// 	// get the list of findings for resource or report or individual results
+// 	// an api call was made to aws here
+// 	list, err := c.getFindingsByIDs(context.Background(), polr, toResourceIDFilter(polr, results), "")
+// 	if err != nil {
+// 		zap.L().Error(c.Name()+": failed to get findings", zap.Error(err))
+// 		return
+// 	}
 
-	// get results that are failures
-	results = filterResults(results)
-	if len(results) == 0 {
-		return
-	}
+// 	// why do i need to filter again fr ?
+// 	list = filterFindings(list, results)
 
-	// get the list of findings for resource or report or individual results
-	// an api call was made to aws here
-	list, err := c.getFindingsByIDs(context.Background(), polr, toResourceIDFilter(polr, results), "")
-	if err != nil {
-		zap.L().Error(c.Name()+": failed to get findings", zap.Error(err))
-		return
-	}
+// 	// turn the findings to an array of findings identifier ? why ?
+// 	findings := helper.Map(list, func(f types.AwsSecurityFinding) types.AwsSecurityFindingIdentifier {
+// 		return types.AwsSecurityFindingIdentifier{
+// 			Id:         f.Id,
+// 			ProductArn: f.ProductArn,
+// 		}
+// 	})
 
-	// why do i need to filter again fr ?
-	list = filterFindings(list, results)
+// 	// update the existing findings and get the ones remaining that were not there before
+// 	if len(findings) > 0 {
+// 		updated, err := c.batchUpdate(context.Background(), findings, types.WorkflowStatusNew)
+// 		if err != nil {
+// 			zap.L().Error(c.Name()+": PUSH FAILED", zap.Error(err))
+// 			return
+// 		} else if updated > 0 {
+// 			zap.L().Info(c.Name()+": PUSH OK", zap.Int("updated", updated))
+// 		}
 
-	// turn the findings to an array of findings identifier ? why ?
-	findings := helper.Map(list, func(f types.AwsSecurityFinding) types.AwsSecurityFindingIdentifier {
-		return types.AwsSecurityFindingIdentifier{
-			Id:         f.Id,
-			ProductArn: f.ProductArn,
-		}
-	})
+// 		// build a map of the existing findings
+// 		mapping := make(map[string]bool, len(list))
+// 		for _, f := range list {
+// 			mapping[*f.Id] = true
+// 		}
 
-	// update the existing findings and get the ones remaining that were not there before
-	if len(findings) > 0 {
-		updated, err := c.batchUpdate(context.Background(), findings, types.WorkflowStatusNew)
-		if err != nil {
-			zap.L().Error(c.Name()+": PUSH FAILED", zap.Error(err))
-			return
-		} else if updated > 0 {
-			zap.L().Info(c.Name()+": PUSH OK", zap.Int("updated", updated))
-		}
+// 		// filter the original list of results by ones that are new
+// 		results = helper.Filter(results, func(result v1alpha2.PolicyReportResult) bool {
+// 			return !mapping[result.GetID()]
+// 		})
+// 	}
 
-		// build a map of the existing findings
-		mapping := make(map[string]bool, len(list))
-		for _, f := range list {
-			mapping[*f.Id] = true
-		}
+// 	if len(results) == 0 {
+// 		return
+// 	}
 
-		// filter the original list of results by ones that are new
-		results = helper.Filter(results, func(result v1alpha2.PolicyReportResult) bool {
-			return !mapping[result.GetID()]
-		})
-	}
+// 	res, err := c.hub.BatchImportFindings(context.Background(), &hub.BatchImportFindingsInput{
+// 		Findings: c.mapFindings(polr, results),
+// 	})
+// 	if err != nil {
+// 		zap.L().Error(c.Name()+": PUSH FAILED", zap.Error(err), zap.Any("response", res))
+// 		return
+// 	}
 
-	if len(results) == 0 {
-		return
-	}
-
-	res, err := c.hub.BatchImportFindings(context.Background(), &hub.BatchImportFindingsInput{
-		Findings: c.mapFindings(polr, results),
-	})
-	if err != nil {
-		zap.L().Error(c.Name()+": PUSH FAILED", zap.Error(err), zap.Any("response", res))
-		return
-	}
-
-	zap.L().Info(c.Name()+": PUSH OK", zap.Int32("imported", *res.SuccessCount), zap.Int32("failed", *res.FailedCount), zap.String("report", polr.GetKey()))
-}
+// 	zap.L().Info(c.Name()+": PUSH OK", zap.Int32("imported", *res.SuccessCount), zap.Int32("failed", *res.FailedCount), zap.String("report", polr.GetKey()))
+// }

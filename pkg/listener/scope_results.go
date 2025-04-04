@@ -41,6 +41,7 @@ func NewSendScopeResultsListener(targets *target.Collection) report.ScopeResults
 					resultsToSend = append(resultsToSend, &payload.PolicyReportResultPayload{Result: r})
 				}
 				target.Cache().AddReport(re)
+
 				if len(resultsToSend) > 0 {
 					target.BatchSend(re, resultsToSend)
 				}

@@ -113,7 +113,7 @@ func (c *client) mapFindings(polr v1alpha2.ReportInterface, results []v1alpha2.P
 }
 
 func (c *client) Send(result payload.Payload) {
-	// this method should not be called
+	c.BatchSend(nil, []payload.Payload{result})
 }
 
 func filterResults(results []v1alpha2.PolicyReportResult) []v1alpha2.PolicyReportResult {
@@ -132,11 +132,12 @@ func filterResults(results []v1alpha2.PolicyReportResult) []v1alpha2.PolicyRepor
 	})
 }
 
-func (c *client) BatchSend(polr v1alpha2.ReportInterface, results payload.BatchPayload) {
+func (c *client) BatchSend(polr v1alpha2.ReportInterface, results []payload.Payload) {
 	var (
 		accountID  *string
 		newResults []payload.Payload
 	)
+
 	if c.accountID != "" {
 		accountID = toPointer(c.accountID)
 	}
@@ -149,7 +150,17 @@ func (c *client) BatchSend(polr v1alpha2.ReportInterface, results payload.BatchP
 		Region:      c.region,
 	}
 
-	filters := scutils.ToResourceIDFilter(results.ToSecurityHubFindings(scConf))
+	fs := []types.AwsSecurityFinding{}
+	for _, r := range results {
+		if len(c.customFields) > 0 {
+			r.AddCustomFields(c.customFields)
+		}
+		if f := r.ToSecurityHubFindings(scConf); f != nil {
+			fs = append(fs, *f)
+		}
+	}
+
+	filters := scutils.ToResourceIDFilter(fs)
 
 	list, err := c.getFindingsByIDs(context.Background(), filters, "")
 	if err != nil {
@@ -181,7 +192,7 @@ func (c *client) BatchSend(polr v1alpha2.ReportInterface, results payload.BatchP
 		}
 
 		// get the payloads that were not included in the updated list and put them in an array of payload
-		newResults = helper.Filter(results.ToPayloadSlice(), func(result payload.Payload) bool {
+		newResults = helper.Filter(results, func(result payload.Payload) bool {
 			return !mapping[result.GetID()]
 		})
 	}
@@ -190,8 +201,14 @@ func (c *client) BatchSend(polr v1alpha2.ReportInterface, results payload.BatchP
 		return
 	}
 
+	newfindings := []types.AwsSecurityFinding{}
+	// no need to check for nil here since we are sure there is a value because we already skipped nil ones
+	for _, r := range newResults {
+		newfindings = append(newfindings, *r.ToSecurityHubFindings(scConf))
+	}
+
 	res, err := c.hub.BatchImportFindings(context.Background(), &hub.BatchImportFindingsInput{
-		Findings: results.Filter(newResults).ToSecurityHubFindings(scConf),
+		Findings: newfindings,
 	})
 	if err != nil {
 		zap.L().Error(c.Name()+": PUSH FAILED", zap.Error(err), zap.Any("response", res))
