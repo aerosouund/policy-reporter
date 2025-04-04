@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/kyverno/policy-reporter/pkg/payload"
-	"github.com/kyverno/policy-reporter/pkg/target"
 	"github.com/mailgun/mailgun-go/v4"
 	"go.uber.org/zap"
+
+	"github.com/kyverno/policy-reporter/pkg/payload"
+	"github.com/kyverno/policy-reporter/pkg/target"
 )
 
 type Options struct {

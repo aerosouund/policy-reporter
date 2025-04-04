@@ -8,6 +8,7 @@ func toPointer[T any](v T) *T {
 	return &v
 }
 
+// A holder type for higher level security hub properties
 type SecurityHubConfig struct {
 	AccountID   string
 	ProductName string
@@ -16,6 +17,16 @@ type SecurityHubConfig struct {
 	Region      string
 }
 
+func NewSecurityHubConfig(accID, productName, companyName, productARN string) SecurityHubConfig {
+	return SecurityHubConfig{
+		AccountID:   accID,
+		ProductName: productName,
+		CompanyName: companyName,
+		ProductARN:  productARN,
+	}
+}
+
+// Turn the security hub finding to a searchable filter in SH
 func ToResourceIDFilter(findings []types.AwsSecurityFinding) []types.StringFilter {
 	list := map[string]bool{}
 	for _, f := range findings {
@@ -31,13 +42,4 @@ func ToResourceIDFilter(findings []types.AwsSecurityFinding) []types.StringFilte
 	}
 
 	return filter
-}
-
-func NewSecurityHubConfig(accID, productName, companyName, productARN string) SecurityHubConfig {
-	return SecurityHubConfig{
-		AccountID:   accID,
-		ProductName: productName,
-		CompanyName: companyName,
-		ProductARN:  productARN,
-	}
 }

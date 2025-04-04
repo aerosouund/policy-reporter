@@ -1,8 +1,9 @@
 package payload
 
 import (
-	"github.com/kyverno/policy-reporter/pkg/crd/api/policyreport/v1alpha2"
 	"github.com/slack-go/slack"
+
+	"github.com/kyverno/policy-reporter/pkg/crd/api/policyreport/v1alpha2"
 )
 
 var slackColors = map[v1alpha2.PolicySeverity]string{

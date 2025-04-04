@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	mg "github.com/mailgun/mailgun-go/v4"
 	_ "github.com/mattn/go-sqlite3"
 	"go.uber.org/zap"
 
@@ -34,7 +35,6 @@ import (
 	"github.com/kyverno/policy-reporter/pkg/target/telegram"
 	"github.com/kyverno/policy-reporter/pkg/target/webhook"
 	"github.com/kyverno/policy-reporter/pkg/validate"
-	mg "github.com/mailgun/mailgun-go/v4"
 )
 
 // TargetFactory manages target creation

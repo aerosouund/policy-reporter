@@ -7,10 +7,11 @@ import (
 
 	"github.com/atc0005/go-teams-notify/v2/adaptivecard"
 	"github.com/aws/aws-sdk-go-v2/service/securityhub/types"
+	"github.com/slack-go/slack"
+
 	"github.com/kyverno/policy-reporter/pkg/crd/api/policyreport/v1alpha2"
 	"github.com/kyverno/policy-reporter/pkg/http"
 	"github.com/kyverno/policy-reporter/pkg/payload/scutils"
-	"github.com/slack-go/slack"
 )
 
 var (
