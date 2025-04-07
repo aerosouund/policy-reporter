@@ -105,6 +105,9 @@ func (c *client) BatchSend(polr v1alpha2.ReportInterface, results []payload.Payl
 		}
 	})
 
+	// create a new variable with all the results in case they are all new
+	newResults = results
+
 	// update the existing findings and get the ones remaining that were not there before
 	if len(findings) > 0 {
 		updated, err := c.batchUpdate(context.Background(), findings, types.WorkflowStatusNew)
