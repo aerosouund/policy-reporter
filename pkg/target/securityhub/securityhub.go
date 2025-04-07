@@ -155,7 +155,7 @@ func (c *client) BatchSend(polr v1alpha2.ReportInterface, results []payload.Payl
 		return
 	}
 
-	zap.L().Info(c.Name()+": PUSH OK", zap.Int32("imported", *res.SuccessCount), zap.Int32("failed", *res.FailedCount), zap.String("report", polr.GetKey()))
+	zap.L().Info(c.Name()+": PUSH OK", zap.Int32("imported", *res.SuccessCount), zap.Int32("failed", *res.FailedCount))
 }
 
 func (c *client) Reset(ctx context.Context) error {
