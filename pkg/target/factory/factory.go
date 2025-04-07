@@ -767,14 +767,13 @@ func (f *TargetFactory) CreateSecurityHubTarget(config, parent *v1alpha1.Config[
 		Delay:        time.Duration(config.Config.DelayInSeconds) * time.Second,
 		Synchronize:  config.Config.Synchronize,
 	})
-	_ = hub // todo: implement security hub
 
 	return &target.Target{
 		ID:           uuid.NewString(),
 		Type:         target.SecurityHub,
 		Config:       config,
 		ParentConfig: parent,
-		// Client:       hub, todo: implement policy
+		Client:       hub,
 	}
 }
 
