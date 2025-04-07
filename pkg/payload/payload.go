@@ -48,7 +48,7 @@ type Payload interface {
 	// Get the Email representation
 	ToEmail() (EmailMsg, error)
 	// Get the AWS security finding
-	ToSecurityHubFindings(scutils.SecurityHubConfig) *types.AwsSecurityFinding
+	ToSecurityHubFindings(scutils.SecurityHubConfig) (*types.AwsSecurityFinding, error)
 	// Get the key in a blob storage that this payload should be pushed to
 	BlobStorageKey(string) string
 	// Get the Kinesis key the payload should be pushed to

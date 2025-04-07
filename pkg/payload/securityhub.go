@@ -16,9 +16,9 @@ func toPointer[T any](v T) *T {
 	return &v
 }
 
-func (p *PolicyReportResultPayload) ToSecurityHubFindings(scConf scutils.SecurityHubConfig) *types.AwsSecurityFinding {
+func (p *PolicyReportResultPayload) ToSecurityHubFindings(scConf scutils.SecurityHubConfig) (*types.AwsSecurityFinding, error) {
 	if !shouldSendresult(p.Result) {
-		return nil
+		return nil, fmt.Errorf("invalid result to send")
 	}
 
 	generator := p.Result.Policy
@@ -67,7 +67,7 @@ func (p *PolicyReportResultPayload) ToSecurityHubFindings(scConf scutils.Securit
 			},
 		},
 		RecordState: types.RecordStateActive,
-	}
+	}, nil
 }
 
 func mapSeverity(s v1alpha2.PolicySeverity) types.SeverityLabel {

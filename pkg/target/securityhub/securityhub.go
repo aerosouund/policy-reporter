@@ -79,9 +79,13 @@ func (c *client) BatchSend(polr v1alpha2.ReportInterface, results []payload.Payl
 		if len(c.customFields) > 0 {
 			r.AddCustomFields(c.customFields)
 		}
-		if f := r.ToSecurityHubFindings(scConf); f != nil {
-			fs = append(fs, *f)
+		f, err := r.ToSecurityHubFindings(scConf)
+		if err != nil {
+			zap.L().Error(c.Name()+": Skipping result: ", zap.Any("resultID", r.GetID()), zap.Error(err))
+			continue
 		}
+
+		fs = append(fs, *f)
 	}
 
 	// transform the findings to filters
@@ -130,7 +134,13 @@ func (c *client) BatchSend(polr v1alpha2.ReportInterface, results []payload.Payl
 	newfindings := []types.AwsSecurityFinding{}
 	// no need to check for nil here since we are sure there is a value because we already skipped nil ones
 	for _, r := range newResults {
-		newfindings = append(newfindings, *r.ToSecurityHubFindings(scConf))
+		f, err := r.ToSecurityHubFindings(scConf)
+		if err != nil {
+			zap.L().Error(c.Name()+": Skipping result: ", zap.Any("resultID", r.GetID()), zap.Error(err))
+			continue
+		}
+
+		newfindings = append(newfindings, *f)
 	}
 
 	// import new findings
