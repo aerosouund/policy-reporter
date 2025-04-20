@@ -55,20 +55,6 @@ type values struct {
 }
 
 func (s *PolicyReportResultPayload) ToTelegram(chatID string) (string, error) {
-	// if len(e.customFields) > 0 {
-	// 	props := make(map[string]string, 0)
-
-	// 	for property, value := range e.customFields {
-	// 		props[property] = value
-	// 	}
-
-	// 	for property, value := range result.Properties {
-	// 		props[property] = value
-	// 	}
-
-	// 	result.Properties = props
-	// }
-
 	var textBuffer bytes.Buffer
 
 	ttmpl, err := template.New("telegram").Funcs(template.FuncMap{"escape": escape}).Parse(notificationTempl)
