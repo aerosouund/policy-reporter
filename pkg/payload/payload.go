@@ -32,7 +32,7 @@ type Payload interface {
 	// Return a unique identifier to the payload
 	GetID() string
 	// Get the JSON representation of the payload
-	Body() http.Result
+	Body() interface{}
 	// Get the payload as a loki stream
 	ToLoki() Stream
 	// Get the Telegram notification string
@@ -84,7 +84,7 @@ func (p *PolicyReportResultPayload) BlobStorageKey(prefix string) string {
 	return fmt.Sprintf("%s/%s/%s-%s-%s.json", prefix, t.Format("2006-01-02"), p.Result.Policy, p.Result.ID, t.Format(time.RFC3339Nano))
 }
 
-func (p *PolicyReportResultPayload) Body() http.Result {
+func (p *PolicyReportResultPayload) Body() interface{} {
 	return http.NewJSONResult(p.Result)
 }
 
