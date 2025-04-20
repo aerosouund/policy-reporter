@@ -8,6 +8,7 @@ import (
 	"github.com/kyverno/policy-reporter/pkg/http"
 	"github.com/kyverno/policy-reporter/pkg/payload"
 	"github.com/kyverno/policy-reporter/pkg/target"
+	"go.uber.org/zap"
 )
 
 var (
@@ -41,7 +42,12 @@ type client struct {
 }
 
 func (l *client) Send(result payload.Payload) {
-	result.AddCustomFields(l.customFields)
+	if len(l.customFields) > 0 {
+		if err := result.AddCustomFields(l.customFields); err != nil {
+			zap.L().Error(l.Name()+": Error adding custom fields", zap.Error(err))
+			return
+		}
+	}
 	l.send(Payload{
 		Streams: []payload.Stream{
 			result.ToLoki(),
@@ -50,8 +56,16 @@ func (l *client) Send(result payload.Payload) {
 }
 
 func (l *client) BatchSend(_ v1alpha2.ReportInterface, results []payload.Payload) {
+	if len(l.customFields) > 0 {
+		for _, r := range results {
+			if err := r.AddCustomFields(l.customFields); err != nil {
+				zap.L().Error(l.Name()+": Error adding custom fields", zap.Error(err))
+				continue
+			}
+		}
+	}
+
 	l.send(Payload{Streams: helper.Map(results, func(result payload.Payload) payload.Stream {
-		result.AddCustomFields(l.customFields)
 		return result.ToLoki()
 	})})
 }

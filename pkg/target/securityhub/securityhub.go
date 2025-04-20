@@ -77,7 +77,10 @@ func (c *client) BatchSend(polr v1alpha2.ReportInterface, results []payload.Payl
 	fs := []types.AwsSecurityFinding{}
 	for _, r := range results {
 		if len(c.customFields) > 0 {
-			r.AddCustomFields(c.customFields)
+			if err := r.AddCustomFields(c.customFields); err != nil {
+				zap.L().Error(c.Name()+": Error adding custom fields", zap.Error(err))
+				return
+			}
 		}
 		f, err := r.ToSecurityHubFindings(scConf)
 		if err != nil {

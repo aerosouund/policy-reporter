@@ -28,7 +28,10 @@ type client struct {
 
 func (c *client) Send(result payload.Payload) {
 	if len(c.customFields) > 0 {
-		result.AddCustomFields(c.customFields)
+		if err := result.AddCustomFields(c.customFields); err != nil {
+			zap.L().Error(c.Name()+": Error adding custom fields", zap.Error(err))
+			return
+		}
 	}
 	resultBody := result.Body()
 	body := new(bytes.Buffer)

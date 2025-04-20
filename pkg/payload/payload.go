@@ -38,7 +38,7 @@ type Payload interface {
 	// Get the Telegram notification string
 	ToTelegram(chatId string) (string, error)
 	// Get the Teams representation
-	ToTeams() adaptivecard.Container
+	ToTeams() (adaptivecard.Container, error)
 	// Get the Slack representation
 	ToSlack(channel string) *slack.Attachment
 	// Get the Discord representation
@@ -54,7 +54,7 @@ type Payload interface {
 	// Get the Kinesis key the payload should be pushed to
 	KinesisKey() string
 	// Add any custom key value pairs to the payload
-	AddCustomFields(map[string]string)
+	AddCustomFields(map[string]string) error
 }
 
 type PolicyReportResultPayload struct {
@@ -65,7 +65,7 @@ func (p *PolicyReportResultPayload) GetID() string {
 	return p.Result.GetID()
 }
 
-func (p *PolicyReportResultPayload) AddCustomFields(fieldMap map[string]string) {
+func (p *PolicyReportResultPayload) AddCustomFields(fieldMap map[string]string) error {
 	props := make(map[string]string, 0)
 
 	for property, value := range fieldMap {
@@ -77,6 +77,7 @@ func (p *PolicyReportResultPayload) AddCustomFields(fieldMap map[string]string) 
 	}
 
 	p.Result.Properties = props
+	return nil
 }
 
 func (p *PolicyReportResultPayload) BlobStorageKey(prefix string) string {

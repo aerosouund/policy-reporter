@@ -8,7 +8,7 @@ import (
 	"github.com/kyverno/policy-reporter/pkg/helper"
 )
 
-func (p *PolicyReportResultPayload) ToTeams() adaptivecard.Container {
+func (p *PolicyReportResultPayload) ToTeams() (adaptivecard.Container, error) {
 	stats := newFactSet()
 	stats.Facts = append(stats.Facts, adaptivecard.Fact{Title: "Status", Value: string(p.Result.Severity)})
 
@@ -34,7 +34,7 @@ func (p *PolicyReportResultPayload) ToTeams() adaptivecard.Container {
 		r.AddElement(false, MapToColumnSet(p.Result.Properties))
 	}
 
-	return r
+	return r, nil
 }
 
 func newFactSet() adaptivecard.Element {

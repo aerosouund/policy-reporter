@@ -7,6 +7,7 @@ import (
 	"github.com/kyverno/policy-reporter/pkg/http"
 	"github.com/kyverno/policy-reporter/pkg/payload"
 	"github.com/kyverno/policy-reporter/pkg/target"
+	"go.uber.org/zap"
 )
 
 // Options to configure the Discord target
@@ -25,7 +26,12 @@ type client struct {
 }
 
 func (d *client) Send(result payload.Payload) {
-	result.AddCustomFields(d.customFields)
+	if len(d.customFields) > 0 {
+		if err := result.AddCustomFields(d.customFields); err != nil {
+			zap.L().Error(d.Name()+": Error adding custom fields", zap.Error(err))
+			return
+		}
+	}
 	req, err := http.CreateJSONRequest("POST", d.webhook, result.ToDiscord())
 	if err != nil {
 		return

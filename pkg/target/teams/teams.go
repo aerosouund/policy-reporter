@@ -83,7 +83,11 @@ func (s *client) newMessage(resource *corev1.ObjectReference, results []payload.
 	card.AddContainer(true, header)
 
 	for _, result := range results {
-		cont := result.ToTeams()
+		cont, err := result.ToTeams()
+		if err != nil {
+			zap.L().Error(s.Name()+": Error in teams conversion", zap.Error(err))
+			continue
+		}
 		card.AddContainer(false, cont)
 	}
 

@@ -6,6 +6,7 @@ import (
 	"github.com/kyverno/policy-reporter/pkg/http"
 	"github.com/kyverno/policy-reporter/pkg/payload"
 	"github.com/kyverno/policy-reporter/pkg/target"
+	"go.uber.org/zap"
 )
 
 // Options to configure elasticsearch target
@@ -71,7 +72,10 @@ func (e *client) Send(result payload.Payload) {
 	}
 
 	if len(e.customFields) > 0 {
-		result.AddCustomFields(e.customFields)
+		if err := result.AddCustomFields(e.customFields); err != nil {
+			zap.L().Error(e.Name()+": Error adding custom fields", zap.Error(err))
+			return
+		}
 	}
 	resultBody := result.Body()
 
