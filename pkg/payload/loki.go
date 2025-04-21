@@ -13,7 +13,7 @@ type Stream struct {
 	Values []Value           `json:"values"`
 }
 
-func (s *PolicyReportResultPayload) ToLoki() Stream {
+func (s *PolicyReportResultPayload) ToLoki() (Stream, error) {
 	timestamp := time.Now()
 	if s.Result.Timestamp.Seconds != 0 {
 		timestamp = time.Unix(s.Result.Timestamp.Seconds, int64(s.Result.Timestamp.Nanos))
@@ -59,5 +59,5 @@ func (s *PolicyReportResultPayload) ToLoki() Stream {
 	return Stream{
 		Values: []Value{[]string{fmt.Sprintf("%v", timestamp.UnixNano()), "[" + strings.ToUpper(string(s.Result.Severity)) + "] " + s.Result.Message}},
 		Stream: labels,
-	}
+	}, nil
 }

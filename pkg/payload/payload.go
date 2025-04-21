@@ -34,7 +34,7 @@ type Payload interface {
 	// Get the JSON representation of the payload
 	Body() interface{}
 	// Get the payload as a loki stream
-	ToLoki() Stream
+	ToLoki() (Stream, error)
 	// Get the Telegram notification string
 	ToTelegram(chatId string) (string, error)
 	// Get the Teams representation

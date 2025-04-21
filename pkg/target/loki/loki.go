@@ -1,19 +1,11 @@
 package loki
 
 import (
-	"strings"
-
 	"github.com/kyverno/policy-reporter/pkg/crd/api/policyreport/v1alpha2"
-	"github.com/kyverno/policy-reporter/pkg/helper"
 	"github.com/kyverno/policy-reporter/pkg/http"
 	"github.com/kyverno/policy-reporter/pkg/payload"
 	"github.com/kyverno/policy-reporter/pkg/target"
 	"go.uber.org/zap"
-)
-
-var (
-	keyReplacer   = strings.NewReplacer(".", "_", "]", "", "[", "")
-	labelReplacer = strings.NewReplacer("/", "")
 )
 
 // Options to configure the Loki target
@@ -48,26 +40,38 @@ func (l *client) Send(result payload.Payload) {
 			return
 		}
 	}
+	s, err := result.ToLoki()
+	if err != nil {
+		zap.L().Error(l.Name()+": Error converting to loki stream", zap.Error(err))
+		return
+	}
 	l.send(Payload{
 		Streams: []payload.Stream{
-			result.ToLoki(),
+			s,
 		},
 	})
 }
 
 func (l *client) BatchSend(_ v1alpha2.ReportInterface, results []payload.Payload) {
-	if len(l.customFields) > 0 {
-		for _, r := range results {
+	lokiResults := []payload.Stream{}
+
+	for _, r := range results {
+		lokiRes, err := r.ToLoki()
+		if err != nil {
+			zap.L().Error(l.Name()+"Error converting to loki stream", zap.Error(err))
+			continue
+		}
+
+		if len(l.customFields) > 0 {
 			if err := r.AddCustomFields(l.customFields); err != nil {
 				zap.L().Error(l.Name()+": Error adding custom fields", zap.Error(err))
 				continue
 			}
 		}
+		lokiResults = append(lokiResults, lokiRes)
 	}
 
-	l.send(Payload{Streams: helper.Map(results, func(result payload.Payload) payload.Stream {
-		return result.ToLoki()
-	})})
+	l.send(Payload{Streams: lokiResults})
 }
 
 func (l *client) send(payload Payload) {
