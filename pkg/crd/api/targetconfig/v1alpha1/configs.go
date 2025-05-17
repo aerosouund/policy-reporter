@@ -16,6 +16,7 @@ type SMTPOptions struct {
 	Port     string `mapstructure:"port" json:"port"`
 	Username string `mapstructure:"username" json:"username"`
 	Password string `mapstructure:"password" json:"password"`
+	Sender   string `mapstructure:"sender" json:"sender"`
 }
 
 type WebhookOptions struct {
