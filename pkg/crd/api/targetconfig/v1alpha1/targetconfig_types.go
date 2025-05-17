@@ -67,6 +67,9 @@ type TargetConfigSpec struct {
 
 	// +optional
 	Teams *WebhookOptions `json:"teams,omitempty"`
+
+	// +optional
+	SMTP *SMTPOptions `json:"smtp,omitempty"`
 }
 
 // TargetConfigStatus defines the observed state of TargetConfig.

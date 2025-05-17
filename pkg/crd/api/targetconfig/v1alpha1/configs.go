@@ -11,6 +11,13 @@ type AWSConfig struct {
 	Endpoint string `mapstructure:"endpoint" json:"endpoint"`
 }
 
+type SMTPOptions struct {
+	Host     string `mapstructure:"host" json:"host"`
+	Port     string `mapstructure:"port" json:"port"`
+	Username string `mapstructure:"username" json:"username"`
+	Password string `mapstructure:"password" json:"password"`
+}
+
 type WebhookOptions struct {
 	Webhook     string            `mapstructure:"webhook" json:"webhook"`
 	SkipTLS     bool              `mapstructure:"skipTLS" json:"skipTLS"`
